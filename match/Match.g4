@@ -4,10 +4,10 @@ prog:	expr EOF ;
 
 // 完整表达式
 expr
-    : '(' expr ')'
-    | notOp expr
+    : notOp expr
     | expr andOp expr
     | expr orOp expr
+    | '(' expr ')'
     | baseExpr
     ;
 
@@ -22,8 +22,6 @@ baseExpr
 // 词表达式的基础形式
 wordBaseExpr
     : WORD comparisonOp DIGITS
-    | notOp WORD
-    | '(' wordBaseExpr ')'
     | WORD
     ;
 
@@ -37,7 +35,6 @@ nearBaseExpr
 words
     : WORD andOp WORD
     | WORD orOp WORD
-    | '(' words ')'
     ;
 
 // 比较符号

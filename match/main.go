@@ -46,7 +46,7 @@ func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 }
 
 func (l *TraceListener) ExitEveryRule(ctx antlr.ParserRuleContext) {
-	// printLevelPrMatchx)
+	// printLevelPrefix(ctx)
 	i := ctx.GetRuleIndex()
 	ruleName := l.p.RuleNames[i]
 	fmt.Println("<==", ruleName)
