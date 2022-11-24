@@ -7,8 +7,9 @@ prog
 // 完整表达式
 expr
     : halfExpr
+    | expr logicalOp expr
+    | notOp expr
     | '(' expr ')'
-    | notOp? expr (logicalOp notOp expr)*
     ;
 
 // and/or左边或者右边的表达式
@@ -34,7 +35,7 @@ nearBaseExpr
 
 // 词组
 words
-    : word (logicalOp word)+
+    : word logicalOp word
     ;
 
 // 比较符号
@@ -75,12 +76,10 @@ word
     : CHAR+
     ;
 
-fragment
 DIGIT
-    : [0-9]  // match single digit
+    : [0-9]
     ;
 
-fragment
 CHAR
-    : [a-z]
+    : [a-z\\.]
     ;
