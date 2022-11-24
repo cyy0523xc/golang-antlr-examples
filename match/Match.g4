@@ -1,8 +1,6 @@
 grammar Match;
 
-prog
-    : expr
-    ;
+prog:	expr EOF ;
 
 // 完整表达式
 expr
@@ -82,4 +80,16 @@ DIGIT
 
 CHAR
     : [a-z\\.]
+    ;
+
+LINE_COMMENT
+    : '//' .*? '\r'? '\n' -> skip
+    ;
+
+COMMENT
+    : '/*' .*? '*/' -> skip
+    ;
+
+WS
+    : [ \t\r\n]+ -> skip
     ;
