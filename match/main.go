@@ -1,3 +1,4 @@
+// https://tonybai.com/2022/05/25/an-example-of-implement-dsl-using-antlr-and-go-part2/
 package main
 
 import (
@@ -20,6 +21,7 @@ func main() {
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewMatchParser(stream)
 	tree := p.Prog()
+	fmt.Printf("%v\n", tree)
 	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree), tree)
 }
 
