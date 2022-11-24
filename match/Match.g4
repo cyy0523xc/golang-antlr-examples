@@ -4,7 +4,7 @@ prog:	expr EOF ;
 
 // 完整表达式
 expr
-    : leftBracket expr rightBracket
+    : '(' expr ')'
     | notOp expr
     | expr andOp expr
     | expr orOp expr
@@ -16,28 +16,30 @@ baseExpr
     : wordBaseExpr
     | nearBaseExpr
     | words
-    | leftBracket baseExpr rightBracket
+    | '(' baseExpr ')'
     ;
 
 // 词表达式的基础形式
 wordBaseExpr
-    : word comparisonOp digits
-    | notOp word
-    | leftBracket wordBaseExpr rightBracket
-    | word
+    : WORD comparisonOp DIGITS
+    | notOp WORD
+    | wordBaseExpr andOp wordBaseExpr
+    | wordBaseExpr orOp wordBaseExpr
+    | '(' wordBaseExpr ')'
+    | WORD
     ;
 
 // near表达式的基础形式
 nearBaseExpr
-    : (words|word) nearOp (words|word)
-    | leftBracket nearBaseExpr rightBracket
+    : (words|WORD) nearOp '/' DIGITS (words|WORD)
+    | '(' nearBaseExpr ')'
     ;
 
 // 词组
 words
-    : word andOp word
-    | word orOp word
-    | leftBracket words rightBracket
+    : WORD andOp WORD
+    | WORD orOp WORD
+    | '(' words ')'
     ;
 
 // 比较符号
@@ -47,14 +49,6 @@ comparisonOp
     | '>'
     | '>='
     | '='
-    ;
-
-leftBracket
-    : '('
-    ;
-
-rightBracket
-    : ')'
     ;
 
 notOp
@@ -70,23 +64,16 @@ orOp
     ;
 
 nearOp
-    : 'near' '/' digits
+    : 'near'
     ;
 
-word
-    : CHAR+
+// WORD与DIGITS定义有冲突
+WORD
+    : [a-zA-Z0-9\u4e00-\u9fa5\\.]+
     ;
 
-digits
-    : DIGIT+
-    ;
-
-DIGIT
-    : [0-9]
-    ;
-
-CHAR
-    : [a-zA-Z0-9\u4e00-\u9fa5\\.]
+DIGITS
+    : [0-9]+
     ;
 
 LINE_COMMENT
