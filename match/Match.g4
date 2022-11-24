@@ -23,8 +23,6 @@ baseExpr
 wordBaseExpr
     : WORD comparisonOp DIGITS
     | notOp WORD
-    | wordBaseExpr andOp wordBaseExpr
-    | wordBaseExpr orOp wordBaseExpr
     | '(' wordBaseExpr ')'
     | WORD
     ;
@@ -69,7 +67,8 @@ nearOp
 
 // WORD与DIGITS定义有冲突
 WORD
-    : [a-zA-Z0-9\u4e00-\u9fa5\\.]+
+    : '"' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '"'
+    | '\'' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '\''
     ;
 
 DIGITS

@@ -1,0 +1,1 @@
+(("92中国" and "美国09") near/10 "ibbd.net")  or "bat" and ("美国23ab">3 or "中国XP" >= 2 and "新能源")

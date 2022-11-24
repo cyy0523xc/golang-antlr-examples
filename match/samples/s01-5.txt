@@ -1,0 +1,1 @@
+'08XP'=2 and 'P7' <= 21 and "1007" > 23 and "hello" and "123"
