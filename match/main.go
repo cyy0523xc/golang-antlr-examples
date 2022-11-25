@@ -8,6 +8,7 @@ import (
 	"parser"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
+	// "github.com/cyy0523xc/golang-antlr-examples/match/parser"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewMatchParser(stream)
 	tree := p.Prog()
-	fmt.Printf("%v\n", tree)
+	// fmt.Printf("%v\n", tree)
 	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree), tree)
 }
 
@@ -36,6 +37,11 @@ func NewTraceListener(p *parser.MatchParser, t antlr.Tree) *TraceListener {
 		p: p,
 		t: t,
 	}
+}
+
+func (l *TraceListener) EnterNearBaseExpr(ctx antlr.ParserRuleContext) {
+	// i := ctx.GetRuleIndex()
+	fmt.Printf("====> %#v 《 %s 》\n", l, ctx.GetText())
 }
 
 func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
