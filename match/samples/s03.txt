@@ -1,1 +1,1 @@
-(deeao near/10 ibbd.net)  and bat
+("deeao" near/10 "ibbd.net")  and "bat"

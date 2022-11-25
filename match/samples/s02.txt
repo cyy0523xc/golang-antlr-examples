@@ -1,1 +1,1 @@
-deeao near/10 ibbd.net
+"deeao" near/10 "ibbd.net"

@@ -4,38 +4,36 @@ prog:	expr EOF ;
 
 // 完整表达式
 expr
-    : notOp expr
-    | expr andOp expr
+    : expr andOp expr
     | expr orOp expr
+    | notOp '(' expr ')'
     | '(' expr ')'
-    | baseExpr
-    ;
-
-// and/or左边或者右边的表达式
-baseExpr
-    : wordBaseExpr
+    | wordCompExpr
     | nearBaseExpr
-    | words
-    | '(' baseExpr ')'
+    | word
     ;
 
-// 词表达式的基础形式
-wordBaseExpr
-    : WORD comparisonOp DIGITS
-    | WORD
+// 带比较符号的基础形式
+wordCompExpr
+    : word comparisonOp digits
+    | '(' wordCompExpr ')'
     ;
 
 // near表达式的基础形式
 nearBaseExpr
-    : (words|WORD) nearOp '/' DIGITS (words|WORD)
+    : (words|word) nearOp '/' digits (words|word)
     | '(' nearBaseExpr ')'
     ;
 
 // 词组
 words
-    : WORD andOp WORD
-    | WORD orOp WORD
+    : word andOp word
+    | word orOp word
+    | '(' words ')'
     ;
+
+word: WORD;
+digits: DIGITS;
 
 // 比较符号
 comparisonOp
@@ -46,40 +44,20 @@ comparisonOp
     | '='
     ;
 
-notOp
-    : 'not'
-    ;
+notOp: 'not' ;
+andOp: 'and' ;
+orOp: 'or' ;
+nearOp: 'near' ;
 
-andOp
-    : 'and'
-    ;
-
-orOp
-    : 'or'
-    ;
-
-nearOp
-    : 'near'
-    ;
-
-// WORD与DIGITS定义有冲突
+// 关键词
+// 预处理：前后加上引号，避免和digits歧义
 WORD
     : '"' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '"'
     | '\'' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '\''
     ;
 
-DIGITS
-    : [0-9]+
-    ;
+DIGITS: [0-9]+ ;
 
-LINE_COMMENT
-    : '//' .*? '\r'? '\n' -> skip
-    ;
-
-COMMENT
-    : '/*' .*? '*/' -> skip
-    ;
-
-WS
-    : [ \t\r\n]+ -> skip
-    ;
+LINE_COMMENT: '//' .*? '\r'? '\n' -> skip ;
+COMMENT: '/*' .*? '*/' -> skip ;
+WS: [ \t\r\n]+ -> skip ;
