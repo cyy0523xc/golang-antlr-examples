@@ -1,3 +1,3 @@
-module github.com/cyy0523xc/golang-antlr-examples/match/parser
+module parser
 
 go 1.18

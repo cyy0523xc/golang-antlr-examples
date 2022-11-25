@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"parser"
-
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
-	// "github.com/cyy0523xc/golang-antlr-examples/match/parser"
+
+	"parser"
 )
 
 func main() {
@@ -49,6 +48,7 @@ func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 	i := ctx.GetRuleIndex()
 	ruleName := l.p.RuleNames[i]
 	fmt.Printf("==> %s 《 %s 》\n", ruleName, ctx.GetText())
+	// fmt.Printf("%+v\n", l.p)
 }
 
 func (l *TraceListener) ExitEveryRule(ctx antlr.ParserRuleContext) {
