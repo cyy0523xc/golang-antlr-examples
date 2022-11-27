@@ -6,8 +6,8 @@ prog:	expr EOF ;
 expr
     : expr andOp expr
     | expr orOp expr
-    | notOp '(' expr ')'
-    | '(' expr ')'
+    | notOp leftOp expr rightOp
+    | leftOp expr rightOp
     | cmpExpr
     | nearExpr
     | wordExpr
@@ -16,26 +16,26 @@ expr
 // 比较表达式
 cmpExpr
     : word cmpOp digits
-    | '(' cmpExpr ')'
+    | leftOp cmpExpr rightOp
     ;
 
 // near表达式
 nearExpr
     : (words|word) nearOp '/' digits (words|word)
-    | '(' nearExpr ')'
+    | leftOp nearExpr rightOp
     ;
 
 // 单个词表单式
 wordExpr
     : word
-    | '(' wordExpr ')'
+    | leftOp wordExpr rightOp
     ;
 
 // 词组
 words
     : word andOp word
     | word orOp word
-    | '(' words ')'
+    | leftOp words rightOp
     ;
 
 // token
@@ -54,6 +54,8 @@ notOp: 'not' ;
 andOp: 'and' ;
 orOp: 'or' ;
 nearOp: 'near' ;
+leftOp: '(';
+rightOp: ')';
 
 // token
 // 预处理：前后加上引号，避免和digits歧义

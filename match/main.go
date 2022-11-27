@@ -35,6 +35,8 @@ func main() {
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewMatchParser(stream)
 	tree := p.Prog()
+	fmt.Printf("--%#v\n", tree)
+	fmt.Printf("--%#v\n", tree.GetRuleContext().GetRuleContext())
 	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree), tree)
 }
 
@@ -48,8 +50,6 @@ func ParseExpr(expr string) {
 }
 
 func NewTraceListener(p *parser.MatchParser, t antlr.Tree) *TraceListener {
-	fmt.Printf("--%+v\n", p)
-	fmt.Printf("--%+v\n", t)
 	return &TraceListener{
 		p: p,
 		t: t,
@@ -60,7 +60,7 @@ func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 	i := ctx.GetRuleIndex()
 	ruleName := l.p.RuleNames[i]
 	if debug {
-		fmt.Printf("%s==> %s 《 %s 》\n", strings.Repeat(" ", depth*2), ruleName, ctx.GetText())
+		fmt.Printf("%s%02d==> %s 《 %s 》\n", strings.Repeat(" ", depth*2), depth, ruleName, ctx.GetText())
 	}
 	depth += 1
 }
@@ -70,6 +70,6 @@ func (l *TraceListener) ExitEveryRule(ctx antlr.ParserRuleContext) {
 	i := ctx.GetRuleIndex()
 	ruleName := l.p.RuleNames[i]
 	if debug {
-		fmt.Printf("%s<== %s\n", strings.Repeat(" ", depth*2), ruleName)
+		fmt.Printf("%s%02d<== %s\n", strings.Repeat(" ", depth*2), depth, ruleName)
 	}
 }
