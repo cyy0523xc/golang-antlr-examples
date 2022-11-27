@@ -4,11 +4,25 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
 	"parser"
 )
+
+var (
+	// 进入深度
+	depth = 0
+	// 测试标志
+	debug = true
+)
+
+type TraceListener struct {
+	*parser.BaseMatchListener
+	p *parser.MatchParser
+	t antlr.Tree
+}
 
 func main() {
 	println("input file:", os.Args[1])
@@ -21,39 +35,41 @@ func main() {
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewMatchParser(stream)
 	tree := p.Prog()
-	// fmt.Printf("%v\n", tree)
 	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree), tree)
 }
 
-type TraceListener struct {
-	*parser.BaseMatchListener
-	p *parser.MatchParser
-	t antlr.Tree
+func ParseExpr(expr string) {
+	input := antlr.NewInputStream(expr)
+	lexer := parser.NewMatchLexer(input)
+	stream := antlr.NewCommonTokenStream(lexer, 0)
+	p := parser.NewMatchParser(stream)
+	tree := p.Prog()
+	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree), tree)
 }
 
 func NewTraceListener(p *parser.MatchParser, t antlr.Tree) *TraceListener {
+	fmt.Printf("--%+v\n", p)
+	fmt.Printf("--%+v\n", t)
 	return &TraceListener{
 		p: p,
 		t: t,
 	}
 }
 
-func (l *TraceListener) EnterNearBaseExpr(ctx antlr.ParserRuleContext) {
-	// i := ctx.GetRuleIndex()
-	fmt.Printf("====> %#v 《 %s 》\n", l, ctx.GetText())
-}
-
 func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
-	// printLevelPrefix(ctx)
 	i := ctx.GetRuleIndex()
 	ruleName := l.p.RuleNames[i]
-	fmt.Printf("==> %s 《 %s 》\n", ruleName, ctx.GetText())
-	// fmt.Printf("%+v\n", l.p)
+	if debug {
+		fmt.Printf("%s==> %s 《 %s 》\n", strings.Repeat(" ", depth*2), ruleName, ctx.GetText())
+	}
+	depth += 1
 }
 
 func (l *TraceListener) ExitEveryRule(ctx antlr.ParserRuleContext) {
-	// printLevelPrefix(ctx)
+	depth -= 1
 	i := ctx.GetRuleIndex()
 	ruleName := l.p.RuleNames[i]
-	fmt.Println("<==", ruleName)
+	if debug {
+		fmt.Printf("%s<== %s\n", strings.Repeat(" ", depth*2), ruleName)
+	}
 }

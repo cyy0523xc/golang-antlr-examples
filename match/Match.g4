@@ -8,21 +8,27 @@ expr
     | expr orOp expr
     | notOp '(' expr ')'
     | '(' expr ')'
-    | wordCompExpr
-    | nearBaseExpr
-    | word
+    | cmpExpr
+    | nearExpr
+    | wordExpr
     ;
 
-// 带比较符号的基础形式
-wordCompExpr
-    : word comparisonOp digits
-    | '(' wordCompExpr ')'
+// 比较表达式
+cmpExpr
+    : word cmpOp digits
+    | '(' cmpExpr ')'
     ;
 
-// near表达式的基础形式
-nearBaseExpr
+// near表达式
+nearExpr
     : (words|word) nearOp '/' digits (words|word)
-    | '(' nearBaseExpr ')'
+    | '(' nearExpr ')'
+    ;
+
+// 单个词表单式
+wordExpr
+    : word
+    | '(' wordExpr ')'
     ;
 
 // 词组
@@ -32,24 +38,24 @@ words
     | '(' words ')'
     ;
 
+// token
 word: WORD;
 digits: DIGITS;
 
 // 比较符号
-comparisonOp
+cmpOp
     : '<'
     | '<='
     | '>'
     | '>='
     | '='
     ;
-
 notOp: 'not' ;
 andOp: 'and' ;
 orOp: 'or' ;
 nearOp: 'near' ;
 
-// 关键词
+// token
 // 预处理：前后加上引号，避免和digits歧义
 WORD
     : '"' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '"'
