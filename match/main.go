@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -39,6 +40,7 @@ func main() {
 }
 
 func ParseExpr(expr string) (jsonStr string, err error) {
+	rootNode = &Node{}
 	input := antlr.NewInputStream(expr)
 	return parse(input)
 }
@@ -56,6 +58,7 @@ func parse(input *antlr.InputStream) (jsonStr string, err error) {
 
 	// 化简
 	rootNode.Simple()
+	rootNode.SimpleLogic()
 	bytes, err := json.Marshal(rootNode)
 	if err != nil {
 		return
@@ -89,8 +92,17 @@ func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 		fmt.Println(l.stack)
 		bytes, _ := json.Marshal(l.n)
 		fmt.Println("------" + string(bytes))
+		bytes, _ = json.Marshal(rootNode)
+		fmt.Println(ToJson(bytes))
 	}
 	depth += 1
+}
+
+func ToJson(bs []byte) (out string) {
+	var buf bytes.Buffer
+	json.Indent(&buf, bs, "", "  ")
+	out = buf.String()
+	return
 }
 
 func (l *TraceListener) ExitEveryRule(ctx antlr.ParserRuleContext) {

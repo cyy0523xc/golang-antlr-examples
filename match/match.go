@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 )
@@ -30,6 +31,7 @@ const (
 	OrOpKey     = "orOp"
 	NotOpKey    = "notOp"
 	WordKey     = "word"
+	DigitsKey   = "digits"
 	ExprKey     = "expr"
 	NearOpKey   = "nearOp"
 	LeftOpKey   = "leftOp"
@@ -126,7 +128,7 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 		node = n
 		stack.Push(false)
 		return
-	} else if rule == "digits" {
+	} else if rule == DigitsKey {
 		// fmt.Printf("cmp: %+v\n", n)
 		if n.Cmp != nil {
 			n.Cmp.Num, err = strconv.Atoi(text)
@@ -165,6 +167,8 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 			node,
 		}
 	} else {
+		s, _ := json.Marshal(n)
+		fmt.Printf("Add child: %s\n", string(s))
 		n.Children = append(n.Children, node)
 	}
 	stack.Push(true)
@@ -219,5 +223,68 @@ func (n *Node) Simple() {
 	// 递归处理子节点
 	for _, child := range n.Children {
 		child.Simple()
+	}
+}
+
+func (n *Node) SimpleLogic() {
+	// a and (b and c) => and(a,b,c)
+	// a or (b or c) => or(a,b,c)
+	if n.Children == nil {
+		return
+	}
+	if !(n.Op == "and" || n.Op == "or") {
+		return
+	}
+	op := n.Op
+	isOk := true
+	hasLogic := false
+	for _, child := range n.Children {
+		// 包含相同的逻辑运算，不是相同的则是叶子节点
+		if child.Op == op {
+			hasLogic = true
+		} else if child.Children != nil {
+			isOk = false
+			break
+		}
+	}
+	if isOk && hasLogic {
+		// 需要进行合并
+		var dels []int       // 需要删除的节点
+		var newNodes []*Node // 新增的节点
+		for i, child := range n.Children {
+			if child.Children == nil {
+				continue
+			}
+			dels = append(dels, i)
+			for _, sun := range child.Children {
+				sun.father = n
+				newNodes = append(newNodes, sun)
+			}
+		}
+		// 删除多余的节点
+		for i := len(dels) - 1; i >= 0; i-- {
+			val := dels[i]
+			if val == 0 {
+				n.Children = n.Children[1:]
+			} else if val == len(n.Children)-1 {
+				n.Children = n.Children[:len(n.Children)-1]
+			} else {
+				n.Children = append(n.Children[:val], n.Children[val+1:]...)
+			}
+		}
+		// 新增节点
+		for _, child := range newNodes {
+			n.Children = append(n.Children, child)
+			child.father = n
+		}
+
+		// 还需要继续处理该节点
+		n.SimpleLogic()
+		return
+	}
+
+	// 递归处理子节点
+	for _, child := range n.Children {
+		child.SimpleLogic()
 	}
 }

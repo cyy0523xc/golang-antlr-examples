@@ -26,7 +26,7 @@ var cases = [...]Case{
 		},
 	},
 	{
-		Title: "两个关键词组合",
+		Title: "两个关键词and组合",
 		In:    "'keyword' and 'keyword2' >= 3",
 		Out: Node{
 			Op: "and",
@@ -45,6 +45,134 @@ var cases = [...]Case{
 						Word: "keyword2",
 						Op:   ">=",
 						Num:  3,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "3个关键词and组合",
+		In:    "'keyword' and 'keyword2' >= 3 and \"keyword3\"  < 2",
+		Out: Node{
+			Op: "and",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword3",
+						Op:   "<",
+						Num:  2,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword2",
+						Op:   ">=",
+						Num:  3,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "4个关键词and组合",
+		In:    "'keyword' and 'keyword2' >= 3 and \"keyword3\" < 2 and 'keyword4'=3",
+		Out: Node{
+			Op: "and",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword4",
+						Op:   "=",
+						Num:  3,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword3",
+						Op:   "<",
+						Num:  2,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword2",
+						Op:   ">=",
+						Num:  3,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "关键词and与or组合",
+		In:    "'keyword5' or 'keyword1' >= 3 or \"keyword2\" < 2 and 'keyword3'=3 and 'keyword4'>4",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword5",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword4",
+								Op:   "=",
+								Num:  3,
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword3",
+								Op:   "<",
+								Num:  2,
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword2",
+								Op:   ">=",
+								Num:  3,
+							},
+						},
 					},
 				},
 			},
@@ -92,6 +220,7 @@ func TestParseExpr(t *testing.T) {
 			t.Errorf(err.Error())
 		}
 		if json1 != json2 {
+			fmt.Println(ToJson([]byte(json2)))
 			t.Fatalf("%02d: %s: not pass!\n%s \n%s\n", i, c.Title, json1, json2)
 		} else {
 			fmt.Printf("\n------------------\n%02d: %s: pass! \n", i, c.Title)
