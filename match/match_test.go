@@ -52,7 +52,7 @@ var cases = [...]Case{
 	},
 	{
 		Title: "比较表达式与near表达式组合",
-		In:    "'keyword' and 'keyword2' near/10 'keyword3'",
+		In:    "'keyword' and ('keyword2' near/10 'keyword3')",
 		Out: Node{
 			Op: "and",
 			Children: []*Node{
@@ -78,12 +78,24 @@ var cases = [...]Case{
 }
 
 func TestParseExpr(t *testing.T) {
+	// debug = false
 	for i, c := range cases {
-		fmt.Printf("%02d: %s \n", i, c.Title)
 		bytes, err := json.Marshal(c.Out)
 		if err != nil {
 			t.Errorf(err.Error())
 		}
-		fmt.Println(string(bytes))
+		json1 := string(bytes)
+
+		// 调用解释
+		json2, err := ParseExpr(c.In)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if json1 != json2 {
+			t.Fatalf("%02d: %s: not pass!\n%s \n%s\n", i, c.Title, json1, json2)
+		} else {
+			fmt.Printf("\n------------------\n%02d: %s: pass! \n", i, c.Title)
+		}
+		fmt.Println()
 	}
 }
