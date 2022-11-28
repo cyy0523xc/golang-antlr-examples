@@ -45,34 +45,64 @@ type NearExpr struct {
 
 // 节点
 type Node struct {
-	father    *Node // 父节点
-	rule      string
-	Op        string     `json:"op"`       // 逻辑操作符：and, or, not, 空字符串
-	Children  []*Node    `json:"children"` // 如果是叶子节点，则没有子节点
-	CmpExprs  []CmpExpr  `json:"cmp"`
-	NearExprs []NearExpr `json:"near"`
+	father *Node  // 父节点
+	rule   string // 表达式的规则名
+
+	// 逻辑操作符：and, or, not, cmp, near, 空字符串
+	// 其中：cmp和near是叶子节点
+	Op       string    `json:"op"`
+	Cmp      *CmpExpr  `json:"cmp"`
+	Near     *NearExpr `json:"near"`
+	Children []*Node   `json:"children"` // 如果是叶子节点，则没有子节点
 }
 
-func (n *Node) Enter(rule string) (newNode *Node, err error) {
+// stack []bool 是否生成新节点
+func (n *Node) Enter(rule string, text string, stack []bool) (node *Node, err error) {
 	if rule == AndOpKey || rule == OrOpKey || rule == NotOpKey {
-		n.father.Op = rule
-		return n, err
+		// 如：a and b
+		// 解释到and的时候，
+		node = n
+		node.father.Op = rule
+		stack = append(stack, false)
+		return
 	}
-	newNode = &Node{
+	if rule == "word" {
+		if n.rule == WordExprKey {
+			n.Cmp = &CmpExpr{
+				Word: text,
+			}
+		}
+		node = n
+		stack = append(stack, false)
+		return
+	}
+
+	// 生成新节点
+	node = &Node{
 		rule: rule,
 	}
+	stack = append(stack, true) // 生成新节点
+	if rule == WordExprKey {
+		// 单个关键或者带比较符号的简单表达式
+		node.Op = "cmp"
+		return
+	}
 	if rule == "prog" || rule == "expr" {
-		n.Children = append(n.Children, newNode)
+		n.Children = append(n.Children, node)
 		return
 	}
 	if rule == CmpExprKey {
 		// 比较表达式
-		n.Children = append(n.Children, newNode)
+		n.Children = append(n.Children, node)
 		return
 	}
 	return
 }
 
-func (n *Node) Exit(rule string) (err error) {
+func (n *Node) Exit(rule string, stack []bool) (node *Node, err error) {
+	if stack[len(stack)-1] {
+		node = n.father
+		stack = stack[:len(stack)-1]
+	}
 	return
 }
