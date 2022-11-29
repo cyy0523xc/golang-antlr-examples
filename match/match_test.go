@@ -131,11 +131,24 @@ var cases = [...]Case{
 			Op: "or",
 			Children: []*Node{
 				{
-					Op: "cmp",
-					Cmp: &CmpExpr{
-						Word: "keyword5",
-						Op:   ">=",
-						Num:  1,
+					Op: "or",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword5",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword1",
+								Op:   ">=",
+								Num:  3,
+							},
+						},
 					},
 				},
 				{
@@ -145,14 +158,14 @@ var cases = [...]Case{
 							Op: "cmp",
 							Cmp: &CmpExpr{
 								Word: "keyword4",
-								Op:   "=",
-								Num:  3,
+								Op:   ">",
+								Num:  4,
 							},
 						},
 						{
 							Op: "cmp",
 							Cmp: &CmpExpr{
-								Word: "keyword3",
+								Word: "keyword2",
 								Op:   "<",
 								Num:  2,
 							},
@@ -160,16 +173,8 @@ var cases = [...]Case{
 						{
 							Op: "cmp",
 							Cmp: &CmpExpr{
-								Word: "keyword",
-								Op:   ">=",
-								Num:  1,
-							},
-						},
-						{
-							Op: "cmp",
-							Cmp: &CmpExpr{
-								Word: "keyword2",
-								Op:   ">=",
+								Word: "keyword3",
+								Op:   "=",
 								Num:  3,
 							},
 						},

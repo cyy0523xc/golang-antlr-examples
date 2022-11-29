@@ -69,16 +69,19 @@ type Node struct {
 }
 
 type Stack struct {
-	data []bool
+	data  []bool
+	depth int // 当前节点的深度
 }
 
 func (s *Stack) Push(val bool) {
 	s.data = append(s.data, val)
+	s.depth += 1
 }
 
 func (s *Stack) Pop() bool {
 	val := s.data[len(s.data)-1]
 	s.data = s.data[:len(s.data)-1]
+	s.depth -= 1
 	return val
 }
 

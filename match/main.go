@@ -63,10 +63,10 @@ func parse(input *antlr.InputStream) (jsonStr string, err error) {
 	if err != nil {
 		return
 	}
-	jsonStr = string(bytes)
 	if debug {
-		fmt.Println("------After: " + jsonStr)
+		fmt.Println("------After: " + ToJson(bytes))
 	}
+	jsonStr = string(bytes)
 	return
 }
 
@@ -89,9 +89,9 @@ func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 	}
 	if debug {
 		fmt.Printf("%s%02d==> %s 《 %s 》\n", strings.Repeat(" ", depth*2), depth, ruleName, ctx.GetText())
-		fmt.Println(l.stack)
+		// fmt.Println(l.stack)
 		bytes, _ := json.Marshal(l.n)
-		fmt.Println("------" + string(bytes))
+		fmt.Printf("depth: %d, node: %s\n", l.stack.depth, string(bytes))
 		bytes, _ = json.Marshal(rootNode)
 		fmt.Println(ToJson(bytes))
 	}
