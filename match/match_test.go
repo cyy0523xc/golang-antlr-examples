@@ -331,7 +331,7 @@ var cases = [...]Case{
 		},
 	},
 	{
-		Title: "near表达式嵌套and/or",
+		Title: "near表达式嵌套and/or: 2",
 		In:    "('中国' and '美国') near/20 ('1000' or '08广州')",
 		Out: Node{
 			Op: "or",
@@ -374,6 +374,166 @@ var cases = [...]Case{
 								LeftWords:  []string{"美国"},
 								RightWords: []string{"08广州"},
 								Dist:       20,
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "near表达式嵌套and/or: 3",
+		In:    "('中国' and '美国' and '日本') near/20 ('1000' or '08广州') ",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"中国"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"美国"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"日本"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
+					},
+				},
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"中国"},
+								RightWords: []string{"08广州"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"美国"},
+								RightWords: []string{"08广州"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"日本"},
+								RightWords: []string{"08广州"},
+								Dist:       20,
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "near表达式嵌套and/or: 4",
+		In:    "'kw1' or (('中国' and '美国' and '日本') near/20 ('1000' or '08广州')) and 'kw2'>2",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "kw1",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "kw2",
+								Op:   ">",
+								Num:  2,
+							},
+						},
+						{
+							Op: "or",
+							Children: []*Node{
+								{
+									Op: "and",
+									Children: []*Node{
+										{
+											Op: "near",
+											Near: &NearExpr{
+												LeftWords:  []string{"中国"},
+												RightWords: []string{"1000"},
+												Dist:       20,
+											},
+										},
+										{
+											Op: "near",
+											Near: &NearExpr{
+												LeftWords:  []string{"美国"},
+												RightWords: []string{"1000"},
+												Dist:       20,
+											},
+										},
+										{
+											Op: "near",
+											Near: &NearExpr{
+												LeftWords:  []string{"日本"},
+												RightWords: []string{"1000"},
+												Dist:       20,
+											},
+										},
+									},
+								},
+								{
+									Op: "and",
+									Children: []*Node{
+										{
+											Op: "near",
+											Near: &NearExpr{
+												LeftWords:  []string{"中国"},
+												RightWords: []string{"08广州"},
+												Dist:       20,
+											},
+										},
+										{
+											Op: "near",
+											Near: &NearExpr{
+												LeftWords:  []string{"美国"},
+												RightWords: []string{"08广州"},
+												Dist:       20,
+											},
+										},
+										{
+											Op: "near",
+											Near: &NearExpr{
+												LeftWords:  []string{"日本"},
+												RightWords: []string{"08广州"},
+												Dist:       20,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -449,8 +609,8 @@ func TestParseExpr(t *testing.T) {
 			t.Errorf(err.Error())
 		}
 		if json1 != json2 {
-			fmt.Println(FmtJson([]byte(json2)))
-			t.Fatalf("%02d: %s: not pass!\n%s \n%s\n", i, c.Title, json1, json2)
+			fmt.Println("\n=========\n" + FmtJson([]byte(json2)))
+			t.Fatalf("%02d: %s: not pass!\n%s\n%s \n%s\n", i, c.Title, c.In, json1, json2)
 		} else {
 			fmt.Printf("\n------------------\n%02d: %s: pass! \n", i, c.Title)
 		}
