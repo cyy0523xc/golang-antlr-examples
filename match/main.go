@@ -2,7 +2,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -28,46 +27,45 @@ type TraceListener struct {
 	stack *Stack
 }
 
-var rootNode = &Node{}
-
 func main() {
 	println("input file:", os.Args[1])
 	input, err := antlr.NewFileStream(os.Args[1])
 	if err != nil {
 		panic(err)
 	}
-	parse(input.InputStream)
+	rootNode := &Node{}
+	rootNode.parse(input.InputStream)
 }
 
 func ParseExpr(expr string) (jsonStr string, err error) {
-	rootNode = &Node{}
+	rootNode := &Node{}
 	input := antlr.NewInputStream(expr)
-	return parse(input)
+	return rootNode.parse(input)
 }
 
-func parse(input *antlr.InputStream) (jsonStr string, err error) {
+func (root *Node) parse(input *antlr.InputStream) (jsonStr string, err error) {
 	lexer := parser.NewMatchLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewMatchParser(stream)
 	tree := p.Prog()
-	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree, rootNode), tree)
+	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree, root), tree)
 	if debug {
-		bytes, _ := json.Marshal(rootNode)
+		bytes, _ := json.Marshal(root)
 		fmt.Println("------Before: " + string(bytes))
 	}
 
 	// 处理Near
-	rootNode.OptimNear()
+	root.OptimNear()
 
 	// 化简
-	rootNode.Simple()
-	rootNode.SimpleLogic()
-	bytes, err := json.Marshal(rootNode)
+	root.Simple()
+	root.SimpleLogic()
+	bytes, err := json.Marshal(root)
 	if err != nil {
 		return
 	}
 	if debug {
-		fmt.Println("------After: " + ToJson(bytes))
+		fmt.Println("------After: " + FmtJson(bytes))
 	}
 	jsonStr = string(bytes)
 	return
@@ -95,17 +93,8 @@ func (l *TraceListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 		// fmt.Println(l.stack)
 		bytes, _ := json.Marshal(l.n)
 		fmt.Printf("depth: %d, node: %s\n", l.stack.depth, string(bytes))
-		bytes, _ = json.Marshal(rootNode)
-		fmt.Println(ToJson(bytes))
 	}
 	depth += 1
-}
-
-func ToJson(bs []byte) (out string) {
-	var buf bytes.Buffer
-	json.Indent(&buf, bs, "", "  ")
-	out = buf.String()
-	return
 }
 
 func (l *TraceListener) ExitEveryRule(ctx antlr.ParserRuleContext) {

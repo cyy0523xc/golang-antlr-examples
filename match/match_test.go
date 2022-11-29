@@ -449,7 +449,7 @@ func TestParseExpr(t *testing.T) {
 			t.Errorf(err.Error())
 		}
 		if json1 != json2 {
-			fmt.Println(ToJson([]byte(json2)))
+			fmt.Println(FmtJson([]byte(json2)))
 			t.Fatalf("%02d: %s: not pass!\n%s \n%s\n", i, c.Title, json1, json2)
 		} else {
 			fmt.Printf("\n------------------\n%02d: %s: pass! \n", i, c.Title)

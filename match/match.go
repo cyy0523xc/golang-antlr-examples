@@ -21,6 +21,7 @@ const (
 
 	// near运算符
 	Near = "near"
+	Cmp  = "cmp"
 
 	// 关键词
 	WordExprKey = "wordExpr"
@@ -208,10 +209,10 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 	stack.Push(true)
 	if rule == WordExprKey || rule == CmpExprKey {
 		// 单个关键或者带比较符号的简单表达式
-		node.Op = "cmp"
+		node.Op = Cmp
 		return
 	} else if rule == NearExprKey {
-		node.Op = "near"
+		node.Op = Near
 		return
 	} else if rule == "prog" || rule == "expr" {
 		return

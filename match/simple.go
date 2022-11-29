@@ -33,7 +33,7 @@ func (n *Node) SimpleLogic() {
 	if n.Children == nil {
 		return
 	}
-	if !(n.Op == "and" || n.Op == "or" || n.Op == "") {
+	if !(n.Op == And || n.Op == Or || n.Op == "") {
 		return
 	}
 	hasAnd, hasOr, hasChild := false, false, false
