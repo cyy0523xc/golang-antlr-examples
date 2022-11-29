@@ -31,6 +31,7 @@ const (
 	OrOpKey     = "orOp"
 	NotOpKey    = "notOp"
 	WordKey     = "word"
+	WordsKey    = "words"
 	DigitsKey   = "digits"
 	ExprKey     = "expr"
 	NearOpKey   = "nearOp"
@@ -52,6 +53,8 @@ type NearExpr struct {
 	LeftWords  []string `json:"left"`  // near左边的关键词
 	RightWords []string `json:"right"` // near右边的关键词
 	Dist       int      `json:"dist"`  // 距离
+	rightOp    string   // near右侧的逻辑操作符
+	leftOp     string   // near左侧的逻辑操作符
 	flag       int      // 当前解释的位置
 }
 
@@ -89,9 +92,32 @@ func (s *Stack) Pop() bool {
 func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err error) {
 	if rule == AndOpKey || rule == OrOpKey || rule == NotOpKey {
 		// 如：a and b
-		// 解释到and的时候，
+		// 解释到and的时候
 		node = n
-		node.Op = rule[:len(rule)-2]
+		rule = rule[:len(rule)-2]
+		if n.rule == NearExprKey {
+			if n.Near.flag == 0 {
+				// near左侧
+				if n.Near.leftOp == "" {
+					n.Near.leftOp = rule
+				} else if n.Near.leftOp != rule {
+					// 异常情况
+					err = fmt.Errorf("Near语句的左侧的多个关键词的逻辑运算符必须是相同的")
+					return
+				}
+			} else {
+				// near右侧
+				if n.Near.rightOp == "" {
+					n.Near.rightOp = rule
+				} else if n.Near.rightOp != rule {
+					// 异常情况
+					err = fmt.Errorf("Near语句的右侧侧的多个关键词的逻辑运算符必须是相同的")
+					return
+				}
+			}
+		} else {
+			node.Op = rule
+		}
 		fmt.Printf("%+v\n", node)
 		fmt.Printf("%+v\n", node.father)
 		stack.Push(false)
@@ -123,6 +149,11 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 				n.Near.LeftWords = append(n.Near.LeftWords, text)
 			}
 		}
+		node = n
+		stack.Push(false)
+		return
+	} else if rule == WordsKey {
+		// 这个是用在near语句中
 		node = n
 		stack.Push(false)
 		return
@@ -201,93 +232,4 @@ func (n *Node) Exit(rule string, stack *Stack) (node *Node, err error) {
 		node = n
 	}
 	return
-}
-
-func (n *Node) Simple() {
-	if n.Children == nil {
-		return
-	}
-	if len(n.Children) == 1 {
-		// 只有一个子节点
-		// fmt.Println("==================")
-		child := n.Children[0]
-		n.rule = child.rule
-		n.Op = child.Op
-		n.Cmp = child.Cmp
-		n.Near = child.Near
-		n.Children = child.Children
-		for _, sun := range child.Children {
-			sun.father = n
-		}
-		child = nil
-		n.Simple()
-	}
-
-	// 递归处理子节点
-	for _, child := range n.Children {
-		child.Simple()
-	}
-}
-
-func (n *Node) SimpleLogic() {
-	// a and (b and c) => and(a,b,c)
-	// a or (b or c) => or(a,b,c)
-	if n.Children == nil {
-		return
-	}
-	if !(n.Op == "and" || n.Op == "or") {
-		return
-	}
-	op := n.Op
-	isOk := true
-	hasLogic := false
-	for _, child := range n.Children {
-		// 包含相同的逻辑运算，不是相同的则是叶子节点
-		if child.Op == op {
-			hasLogic = true
-		} else if child.Children != nil {
-			isOk = false
-			break
-		}
-	}
-	if isOk && hasLogic {
-		// 需要进行合并
-		var dels []int       // 需要删除的节点
-		var newNodes []*Node // 新增的节点
-		for i, child := range n.Children {
-			if child.Children == nil {
-				continue
-			}
-			dels = append(dels, i)
-			for _, sun := range child.Children {
-				sun.father = n
-				newNodes = append(newNodes, sun)
-			}
-		}
-		// 删除多余的节点
-		for i := len(dels) - 1; i >= 0; i-- {
-			val := dels[i]
-			if val == 0 {
-				n.Children = n.Children[1:]
-			} else if val == len(n.Children)-1 {
-				n.Children = n.Children[:len(n.Children)-1]
-			} else {
-				n.Children = append(n.Children[:val], n.Children[val+1:]...)
-			}
-		}
-		// 新增节点
-		for _, child := range newNodes {
-			n.Children = append(n.Children, child)
-			child.father = n
-		}
-
-		// 还需要继续处理该节点
-		n.SimpleLogic()
-		return
-	}
-
-	// 递归处理子节点
-	for _, child := range n.Children {
-		child.SimpleLogic()
-	}
 }

@@ -56,6 +56,9 @@ func parse(input *antlr.InputStream) (jsonStr string, err error) {
 		fmt.Println("------Before: " + string(bytes))
 	}
 
+	// 处理Near
+	rootNode.OptimNear()
+
 	// 化简
 	rootNode.Simple()
 	rootNode.SimpleLogic()

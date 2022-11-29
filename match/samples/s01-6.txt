@@ -1,0 +1,1 @@
+'keyword5' or 'word1' >= 3 or "keyword2" < 2 and 'keyword3'=3 and 'keyword4'>4

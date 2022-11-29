@@ -184,6 +184,65 @@ var cases = [...]Case{
 		},
 	},
 	{
+		Title: "关键词and与or组合（带括号）",
+		In:    "'keyword5' or ('keyword1' >= 3 or \"keyword2\" < 2) and 'keyword3'=3 and 'keyword4'>4",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "keyword5",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword4",
+								Op:   ">",
+								Num:  4,
+							},
+						},
+						{
+							Op: "or",
+							Children: []*Node{
+								{
+									Op: "cmp",
+									Cmp: &CmpExpr{
+										Word: "keyword1",
+										Op:   ">=",
+										Num:  3,
+									},
+								},
+								{
+									Op: "cmp",
+									Cmp: &CmpExpr{
+										Word: "keyword2",
+										Op:   "<",
+										Num:  2,
+									},
+								},
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword3",
+								Op:   "=",
+								Num:  3,
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
 		Title: "比较表达式与near表达式组合",
 		In:    "'keyword' and ('keyword2' near/10 'keyword3')",
 		Out: Node{
@@ -203,6 +262,171 @@ var cases = [...]Case{
 						LeftWords:  []string{"keyword2"},
 						RightWords: []string{"keyword3"},
 						Dist:       10,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "比较表达式与多组near表达式组合",
+		In:    "'keyword' and ('keyword2' near/10 'keyword3') or ('中国' near/20 '1000')",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"keyword2"},
+								RightWords: []string{"keyword3"},
+								Dist:       10,
+							},
+						},
+					},
+				},
+				{
+					Op: "near",
+					Near: &NearExpr{
+						LeftWords:  []string{"中国"},
+						RightWords: []string{"1000"},
+						Dist:       20,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "near表达式嵌套",
+		In:    "('中国' and '美国') near/20 '1000'",
+		Out: Node{
+			Op: "and",
+			Children: []*Node{
+				{
+					Op: "near",
+					Near: &NearExpr{
+						LeftWords:  []string{"中国"},
+						RightWords: []string{"1000"},
+						Dist:       20,
+					},
+				},
+				{
+					Op: "near",
+					Near: &NearExpr{
+						LeftWords:  []string{"美国"},
+						RightWords: []string{"1000"},
+						Dist:       20,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "near表达式嵌套and/or",
+		In:    "('中国' and '美国') near/20 ('1000' or '08广州')",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"中国"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"美国"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
+					},
+				},
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"中国"},
+								RightWords: []string{"08广州"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"美国"},
+								RightWords: []string{"08广州"},
+								Dist:       20,
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "复杂near表达式嵌套",
+		In:    "'keyword' and ('keyword2' near/10 'keyword3') or (('中国' and '美国') near/20 '1000')",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "keyword",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"keyword2"},
+								RightWords: []string{"keyword3"},
+								Dist:       10,
+							},
+						},
+					},
+				},
+				{
+					Op: "and",
+					Children: []*Node{
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"中国"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
+						{
+							Op: "near",
+							Near: &NearExpr{
+								LeftWords:  []string{"美国"},
+								RightWords: []string{"1000"},
+								Dist:       20,
+							},
+						},
 					},
 				},
 			},
