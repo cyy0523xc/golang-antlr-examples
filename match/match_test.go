@@ -592,6 +592,241 @@ var cases = [...]Case{
 			},
 		},
 	},
+
+	// not expr
+	{
+		Title: "not表达式01",
+		In:    "not 'word'",
+		Out: Node{
+			Op: "cmp",
+			Cmp: &CmpExpr{
+				Word: "word",
+				Op:   "=",
+				Num:  0,
+			},
+		},
+	},
+	{
+		Title: "not表达式02",
+		In:    "not 'word' and 'word2'",
+		Out: Node{
+			Op: "and",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "word",
+						Op:   "=",
+						Num:  0,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "word2",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "not表达式03",
+		In:    "not 'word' or 'word2'",
+		Out: Node{
+			Op: "or",
+			Children: []*Node{
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "word",
+						Op:   "=",
+						Num:  0,
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "word2",
+						Op:   ">=",
+						Num:  1,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "not表达式04",
+		In:    "(not 'word' or 'word2' > 1) and not 'word3'",
+		Out: Node{
+			Op: "and",
+			Children: []*Node{
+				{
+					Op: "or",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "word",
+								Op:   "=",
+								Num:  0,
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "word2",
+								Op:   ">",
+								Num:  1,
+							},
+						},
+					},
+				},
+				{
+					Op: "cmp",
+					Cmp: &CmpExpr{
+						Word: "word3",
+						Op:   "=",
+						Num:  0,
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "复杂not表达式01",
+		In:    "not ('word' or 'word2')",
+		Out: Node{
+			Op: "not",
+			Children: []*Node{
+				{
+					Op: "or",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "word",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "word2",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Title: "复杂not表达式02",
+		In:    "not ('word' or 'word2' > 3 and (('word3' or 'word4' or 'word5') near/3 ('hello' and 'word')))",
+		Out: Node{
+			Op: "not",
+			Children: []*Node{
+				{
+					Op: "or",
+					Children: []*Node{
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "word",
+								Op:   ">=",
+								Num:  1,
+							},
+						},
+						{
+							Op: "and",
+							Children: []*Node{
+								{
+									Op: "cmp",
+									Cmp: &CmpExpr{
+										Word: "word2",
+										Op:   ">",
+										Num:  3,
+									},
+								},
+								{
+									Op: "or",
+									Children: []*Node{
+										{
+											Op: "and",
+											Children: []*Node{
+												{
+													Op: "near",
+													Near: &NearExpr{
+														LeftWords:  []string{"word3"},
+														RightWords: []string{"hello"},
+														Dist:       3,
+													},
+												},
+												{
+													Op: "near",
+													Near: &NearExpr{
+														LeftWords:  []string{"word3"},
+														RightWords: []string{"word"},
+														Dist:       3,
+													},
+												},
+											},
+										},
+										{
+											Op: "and",
+											Children: []*Node{
+												{
+													Op: "near",
+													Near: &NearExpr{
+														LeftWords:  []string{"word4"},
+														RightWords: []string{"hello"},
+														Dist:       3,
+													},
+												},
+												{
+													Op: "near",
+													Near: &NearExpr{
+														LeftWords:  []string{"word4"},
+														RightWords: []string{"word"},
+														Dist:       3,
+													},
+												},
+											},
+										},
+										{
+											Op: "and",
+											Children: []*Node{
+												{
+													Op: "near",
+													Near: &NearExpr{
+														LeftWords:  []string{"word5"},
+														RightWords: []string{"hello"},
+														Dist:       3,
+													},
+												},
+												{
+													Op: "near",
+													Near: &NearExpr{
+														LeftWords:  []string{"word5"},
+														RightWords: []string{"word"},
+														Dist:       3,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 func TestParseExpr(t *testing.T) {

@@ -51,14 +51,22 @@ func (root *Node) parse(input *antlr.InputStream) (jsonStr string, err error) {
 	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree, root), tree)
 	if debug {
 		bytes, _ := json.Marshal(root)
-		fmt.Println("------Before: " + string(bytes))
+		fmt.Println("------Before: " + FmtJson(bytes))
 	}
 
 	// 处理Near
 	root.OptimNear()
+	if debug {
+		bytes, _ := json.Marshal(root)
+		fmt.Println("------After optim near: " + FmtJson(bytes))
+	}
 
 	// 化简
 	root.Simple()
+	if debug {
+		bytes, _ := json.Marshal(root)
+		fmt.Println("------After simple: " + FmtJson(bytes))
+	}
 	root.SimpleLogic()
 	bytes, err := json.Marshal(root)
 	if err != nil {

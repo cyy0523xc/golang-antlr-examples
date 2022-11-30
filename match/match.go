@@ -63,6 +63,7 @@ type NearExpr struct {
 type Node struct {
 	father *Node  // 父节点
 	rule   string // 表达式的规则名
+	isNot  bool   // not表达式
 
 	// 逻辑操作符：and, or, not, cmp, near, 空字符串
 	// 其中：cmp和near是叶子节点
@@ -91,7 +92,7 @@ func (s *Stack) Pop() bool {
 
 // stack []bool 是否生成新节点
 func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err error) {
-	if rule == AndOpKey || rule == OrOpKey || rule == NotOpKey {
+	if rule == AndOpKey || rule == OrOpKey {
 		// 如：a and b
 		// 解释到and的时候
 		node = n
@@ -123,6 +124,12 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 		fmt.Printf("%+v\n", node.father)
 		stack.Push(false)
 		return
+	} else if rule == NotOpKey && n.rule == WordExprKey {
+		// 表达式：not word
+		n.isNot = true
+		node = n
+		stack.Push(false)
+		return
 	} else if rule == WordKey {
 		// 词
 		if n.rule == WordExprKey || n.rule == CmpExprKey {
@@ -133,6 +140,11 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 				Word: text,
 				Op:   ">=",
 				Num:  1,
+			}
+			if n.isNot {
+				n.Cmp.Op = "="
+				n.Cmp.Num = 0
+				n.isNot = false
 			}
 		} else if n.rule == NearExprKey {
 			if text[0] == '"' || text[0] == '\'' {
@@ -206,7 +218,11 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 		fmt.Printf("Add child: %s\n", string(s))
 		n.Children = append(n.Children, node)
 	}
-	stack.Push(true)
+	if rule == NotOpKey {
+		stack.Push(false)
+	} else {
+		stack.Push(true)
+	}
 	if rule == WordExprKey || rule == CmpExprKey {
 		// 单个关键或者带比较符号的简单表达式
 		node.Op = Cmp
@@ -214,10 +230,17 @@ func (n *Node) Enter(rule string, text string, stack *Stack) (node *Node, err er
 	} else if rule == NearExprKey {
 		node.Op = Near
 		return
-	} else if rule == "prog" || rule == "expr" {
+	} else if rule == "prog" {
+		// 跟节点
+		return
+	} else if rule == "expr" {
 		return
 	} else if rule == CmpExprKey {
 		// 比较表达式
+		return
+	} else if rule == NotOpKey {
+		// not (expr)
+		node.Op = Not
 		return
 	} else {
 		err = fmt.Errorf("[ERROR] rule name = %s", rule)
