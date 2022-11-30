@@ -35,19 +35,35 @@ func main() {
 	}
 	rootNode := &Node{}
 	rootNode.parse(input.InputStream)
+
+	// 打印字符串
+	bytes, err := json.Marshal(rootNode)
+	if err != nil {
+		fmt.Println("json处理出错")
+	}
+	fmt.Println("------> " + FmtJson(bytes))
 }
 
-func ParseExpr(expr string) (jsonStr string, err error) {
+func ParseExpr(expr string) *Node {
 	rootNode := &Node{}
 	input := antlr.NewInputStream(expr)
-	return rootNode.parse(input)
+	rootNode.parse(input)
+	return rootNode
 }
 
-func (root *Node) parse(input *antlr.InputStream) (jsonStr string, err error) {
+func (root *Node) parse(input *antlr.InputStream) {
 	lexer := parser.NewMatchLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewMatchParser(stream)
-	tree := p.Prog()
+	errorListener := &ErrorListener{
+		root: root,
+	}
+	p.AddErrorListener(errorListener)
+	tree := p.Prog() // 可能会产生解释错误，如：line 1:0 token recognition error at: 'k'
+	if errorListener.root.Err != nil {
+		return
+	}
+
 	antlr.ParseTreeWalkerDefault.Walk(NewTraceListener(p, tree, root), tree)
 	if debug {
 		bytes, _ := json.Marshal(root)
@@ -67,15 +83,12 @@ func (root *Node) parse(input *antlr.InputStream) (jsonStr string, err error) {
 		bytes, _ := json.Marshal(root)
 		fmt.Println("------After simple: " + FmtJson(bytes))
 	}
+	// 逻辑运算化简
 	root.SimpleLogic()
-	bytes, err := json.Marshal(root)
-	if err != nil {
-		return
-	}
 	if debug {
+		bytes, _ := json.Marshal(root)
 		fmt.Println("------After: " + FmtJson(bytes))
 	}
-	jsonStr = string(bytes)
 	return
 }
 

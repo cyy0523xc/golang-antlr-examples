@@ -59,6 +59,13 @@ type NearExpr struct {
 	flag       int      // 当前解释的位置
 }
 
+type Error struct {
+	Code   int    `json:"code"`   // 异常code
+	Column int    `json:"column"` // 异常信息位置
+	Msg    string `json:"msg"`    // 异常信息
+	Detail string `json:"detail"` // 详细异常信息，通常用于开发使用
+}
+
 // 节点
 type Node struct {
 	father *Node  // 父节点
@@ -71,6 +78,9 @@ type Node struct {
 	Cmp      *CmpExpr  `json:"cmp"`
 	Near     *NearExpr `json:"near"`
 	Children []*Node   `json:"children"` // 如果是叶子节点，则没有子节点
+
+	// 异常信息
+	Err *Error `json:"err"`
 }
 
 type Stack struct {

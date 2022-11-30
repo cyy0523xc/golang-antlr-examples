@@ -9,6 +9,7 @@ import (
 type Case struct {
 	In    string
 	Out   Node
+	Err   string
 	Title string
 }
 
@@ -450,7 +451,7 @@ var cases = [...]Case{
 	},
 	{
 		Title: "near表达式嵌套and/or: 4",
-		In:    "'kw1' or (('中国' and '美国' and '日本') near/20 ('1000' or '08广州')) and 'kw2'>2",
+		In:    "'kw1' or ('中国' and '美国' and '日本') near/20 ('1000' or '08广州') and 'kw2'>2",
 		Out: Node{
 			Op: "or",
 			Children: []*Node{
@@ -827,6 +828,44 @@ var cases = [...]Case{
 			},
 		},
 	},
+
+	// 异常表达式
+	{
+		Title: "异常表达式：关键词",
+		In:    "keyword",
+		Out: Node{
+			Err: &Error{
+				Code: ErrSyntaxCode,
+			},
+		},
+	},
+	{
+		Title: "异常表达式02：",
+		In:    "'keyword\"",
+		Out: Node{
+			Err: &Error{
+				Code: ErrSyntaxCode,
+			},
+		},
+	},
+	{
+		Title: "异常表达式03：",
+		In:    "'keyword' 'keyword2'",
+		Out: Node{
+			Err: &Error{
+				Code: ErrSyntaxCode,
+			},
+		},
+	},
+	{
+		Title: "异常表达式04：",
+		In:    "'keyword' and 'keyword2' near/ee 'ke3'",
+		Out: Node{
+			Err: &Error{
+				Code: ErrSyntaxCode,
+			},
+		},
+	},
 }
 
 func TestParseExpr(t *testing.T) {
@@ -839,10 +878,22 @@ func TestParseExpr(t *testing.T) {
 		json1 := string(bytes)
 
 		// 调用解释
-		json2, err := ParseExpr(c.In)
-		if err != nil {
-			t.Errorf(err.Error())
+		node := ParseExpr(c.In)
+		if node.Err != nil {
+			bytes, _ = json.Marshal(node)
+			fmt.Println("\n=========\n" + FmtJson([]byte(bytes)))
+			if c.Out.Err == nil {
+				t.Fatalf("Error1 \n")
+			}
+			if c.Out.Err.Code != node.Err.Code {
+				t.Fatalf("Error2 \n")
+			}
+			continue
 		}
+
+		// 比较内容
+		jsonBytes, _ := json.Marshal(node)
+		json2 := string(jsonBytes)
 		if json1 != json2 {
 			fmt.Println("\n=========\n" + FmtJson([]byte(json2)))
 			t.Fatalf("%02d: %s: not pass!\n%s\n%s \n%s\n", i, c.Title, c.In, json1, json2)
