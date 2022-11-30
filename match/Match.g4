@@ -33,9 +33,10 @@ wordExpr
 
 // 词组
 words
-    : word andOp word
-    | word orOp word
-    | leftOp words rightOp
+    // : '"' (andOp|orOp) ':' word (',' word)+ '"'
+    // | '\'' (andOp|orOp) ':' word (',' word)+ '\''
+    : leftOp word (andOp word)+ rightOp
+    | leftOp word (orOp word)+ rightOp
     ;
 
 // token
@@ -63,7 +64,6 @@ WORD
     : '"' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '"'
     | '\'' [a-zA-Z0-9\u4e00-\u9fa5\\.]+? '\''
     ;
-
 DIGITS: [0-9]+ ;
 
 LINE_COMMENT: '//' .*? '\r'? '\n' -> skip ;

@@ -466,14 +466,6 @@ var cases = [...]Case{
 					Op: "and",
 					Children: []*Node{
 						{
-							Op: "cmp",
-							Cmp: &CmpExpr{
-								Word: "kw2",
-								Op:   ">",
-								Num:  2,
-							},
-						},
-						{
 							Op: "or",
 							Children: []*Node{
 								{
@@ -534,6 +526,14 @@ var cases = [...]Case{
 										},
 									},
 								},
+							},
+						},
+						{
+							Op: "cmp",
+							Cmp: &CmpExpr{
+								Word: "kw2",
+								Op:   ">",
+								Num:  2,
 							},
 						},
 					},
